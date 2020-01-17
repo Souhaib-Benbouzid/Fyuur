@@ -34,13 +34,45 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
+# association table of many to many Relationship between Artist & Genres 
+artist_genre = db.Table(
+  'artist_genre',
+  db.Column('genre', db.String(120), db.ForeignKey('Genre.genre'), primary_key=True),
+  db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
+)
+
+# association table of many to many Relationship between Venus & Genres 
+venue_genre = db.Table(
+  'venue_genre',
+  db.Column('genre', db.String(120), db.ForeignKey('Genre.genre'), primary_key=True),
+  db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
+)
+
+class Genre(db.Model):
+    __tablename__ = 'genre'
+   
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(50), primary_key = True, nullable = False)
+
+    # many to many  relationship with Artist and Venue (Genre is the parents table)
+    artists = db.relationship('Artist', secondary = artist_genre, backref = db.backref('genres', lazy=True))
+    venues = db.relationship('Venue', secondary = venue_genre, backref = db.backref('genres', lazy=True))
+
+class States(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    state = db.Column(db.String(2), primary_key = True)
+    
+    # one to many  relationship with Artist and Venue (States is the parents table)
+    venues = db.relationship('Venue', backref = 'state', lazy= True)
+    artists = db.relationship('Artist', backref = 'state', lazy= True)
+
 class Venue(db.Model):
     __tablename__ = 'venue'
 
-    id = db.Column(db.Integer, primary_key=True, nullable = False)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable = False)
     city = db.Column(db.String(120), nullable = False)
-    state = db.Column(db.String(120), nullable = False)
+    state = db.Column(db.Integer, db.ForeignKey('state.id'), nullable = False)
     address = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
     image_link = db.Column(db.String(500), nullable = False)
@@ -52,15 +84,18 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, nullable = False , default = False)
     seeking_description = db.Column(db.String(1200), nullable = True )
     shows = db.relationship('Show', backref = 'venue', lazy = True)
-    genres = db.relationship('VenueGenre', backref = 'venue', lazy= True)
-  
+   
+    def __repr__(self):
+      return '<id: {}, name: {}, city: {}, state: {}, address: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_talent: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state, self.address, self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_talent, self.seeking_description)
+
+
 class Artist(db.Model):
     __tablename__ = 'artist'
 
-    id = db.Column(db.Integer, primary_key=True, nullable = False)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable = False)
     city = db.Column(db.String(120), nullable = False)
-    state = db.Column(db.String(120), nullable = False)
+    state = db.Column(db.Integer, db.ForeignKey('state.id'), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
     image_link = db.Column(db.String(500), nullable = False)
     facebook_link = db.Column(db.String(120), nullable = True)
@@ -70,31 +105,34 @@ class Artist(db.Model):
     website_link = db.Column(db.String(120), nullable = True)
     seeking_venues = db.Column(db.Boolean(), nullable = False, default= False)
     seeking_description = db.Column(db.String(120), nullable = True)
+    
+    # on to many relationship with show (artist is parent table) 
     shows = db.relationship('Show', backref = 'artist', lazy= True)
-    genres = db.relationship('ArtistGenre', backref = 'artist', lazy= True)
- 
+
+    #display model attribute
+    def __repr__(self):
+      return '<id: {}, name: {}, city: {}, state: {}, address: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_talent: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state, self.address, self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_talent, self.seeking_description)
+     
+       
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. [done]
 
 class Show(db.Model):
     __tablename__ = 'show'
 
-    id = db.Column(db.Integer, primary_key = True, nullable = False)
+    id = db.Column(db.Integer, primary_key = True)
     date = db.Column(db.DateTime(timezone=True), default = datetime.datetime.utcnow, nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable = False)
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False)
 
-class ArtistGenre(db.Model):
-    __tablename__ = 'artist_genre'
-    
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'),primary_key = True, nullable = False)
-    name = db.Column(db.String(120), primary_key = True, nullable = False,)
   
-class VenueGenre(db.Model):
-    __tablename__ = 'venue_genre'
-    
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False , primary_key = True)
-    name = db.Column(db.String(120), nullable = False,primary_key = True)
+""" 
+__table_args__ = (db.UniqueConstraint('name', 'address'), )
 
+venue = Venue(name='sohaib',city='bousaada',state='msila',address='kaisa',phone='546546',facebook_link='fb',website_link='web',image_link='img',seeking_talent=True,seeking_description='test')
+
+venue = Venue('sohaib','bousaada','msila','kaisa','546546','fb','web','img','True','test')
+
+ """
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -253,19 +291,42 @@ def show_venue(venue_id):
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
+  form.state.choices = [States.query.filter_by()]
   return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  try:
+    genres = request.form['genres'],
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    name = request.form['name'],
+    city = request.form['city'],
+    state = request.form['state'],
+    address = request.form['address'],
+    phone = request.form['phone'],
+    facebook_link = request.form['facebook_link'],
+    website_link = request.form['website_link'],
+    image_link = request.form['image_link'],
+    seeking_talent = request.form['seeking_talent'],
+    seeking_description = request.form['seeking_description'],
+
+    venue = Venue()
+    db.session.add(venue)
+    db.commit()
+   
+    # TODO: modify data to be the data object returned from db insertion
+    # on successful db insert, flash success
+    flash('Venue' + 'data '+ ' was successfully listed!')
+  
+
   # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  except:
+      test = 'dsd'
+    # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  finally:
+    return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):

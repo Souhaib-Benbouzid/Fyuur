@@ -1,18 +1,23 @@
 from datetime import datetime
-from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from flask_wtf import Form, FlaskForm
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField,BooleanField
+from wtforms.validators import DataRequired, AnyOf, URL,ValidationError
+from enum import Enum
+from app import Genre
+
+
 
 
 class VenueForm(Form):
+
     name = StringField(
-        'name', validators=[DataRequired()]
+        'name', validators=[DataRequired('Please Enter Your Name!')]
     )
     city = StringField(
-        'city', validators=[DataRequired()]
+        'city', validators=[DataRequired('Please Enter Your City!')]
     )
     state = SelectField(
-        'state', validators=[DataRequired()],
+        'state', validators=[DataRequired('Please Enter Your State')],
         choices=[
             ('AL', 'AL'),
             ('AK', 'AK'),
@@ -68,17 +73,19 @@ class VenueForm(Form):
         ]
     )
     address = StringField(
-        'address', validators=[DataRequired()]
+        'address', validators=[DataRequired('Please Enter Your Address')]
     )
     phone = StringField(
         'phone'
     )
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[DataRequired('Please Enter an Image link'), URL()]
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
+        # TODO implement enum restriction [done]
+        'genres', 
+        
+        validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
@@ -102,8 +109,28 @@ class VenueForm(Form):
         ]
     )
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[DataRequired('Please Enter Your Facebook link!'),URL()]
     )
+    website_link = StringField(
+        'website_link', validators=[DataRequired('Please Enter Your Website link!'),URL()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talent', 
+    )
+    seeking_description = StringField('seeking_description', validators=[DataRequired('Describe The Talent You are looking For')])
+
+    # enum restriction on genre
+    def validation_genre(self, genre):
+        genres = genre.data
+        exists = False
+        for genre in genres:
+            genre_object = Genre.query.filter_by(genre=genre).first()
+            if genre_object:
+                exists = True
+        if not exists:
+            raise ValidationError("pick a genre")
+
+
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
 
@@ -221,3 +248,4 @@ class ArtistForm(Form):
         # TODO implement enum restriction
         'facebook_link', validators=[URL()]
     )
+    
