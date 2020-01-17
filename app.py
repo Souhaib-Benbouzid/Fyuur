@@ -14,6 +14,8 @@ from flask_wtf import Form
 from forms import *
 from config import SQLALCHEMY_DATABASE_URI
 from flask_migrate import Migrate
+import pytz
+import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -43,12 +45,13 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate [done]
+    shows = db.relationship('Show', backref = 'venue', lazy = True)
 
 class Artist(db.Model):
     __tablename__ = 'artist'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, nullable = False)
     name = db.Column(db.String, nullable = False)
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
@@ -57,12 +60,22 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500), nullable = False)
     facebook_link = db.Column(db.String(120), nullable = True)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate [done]
+  
     website_link = db.Column(db.String(120), nullable = True)
     seeking_venues = db.Column(db.Boolean(), nullable = False, default= False)
     seeking_description = db.Column(db.String(120), nullable = True)
+    shows = db.relationship('Show', backref = 'artist', lazy= True)
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. [done]
+   
+class Show(db.Model):
+    __tablename__ = 'show'
+
+    id = db.Column(db.Integer, primary_key = True, nullable = False)
+    date = db.Column(db.DateTime(timezone=True), default = datetime.datetime.utcnow, nullable=False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable = False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False)
 
 #----------------------------------------------------------------------------#
 # Filters.
