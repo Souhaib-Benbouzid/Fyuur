@@ -23,7 +23,7 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-# TODO: connect to a local postgresql database
+# TODO: connect to a local postgresql database [Done]
 app.config['SQLALCHEMY_DATABASE_URI']=  SQLALCHEMY_DATABASE_URI
 migrate = Migrate(app, db)
 
@@ -49,15 +49,18 @@ class Artist(db.Model):
     __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    name = db.Column(db.String, nullable = False)
+    city = db.Column(db.String(120), nullable = False)
+    state = db.Column(db.String(120), nullable = False)
+    phone = db.Column(db.String(120), nullable = False)
+    genres = db.Column(db.String(120), nullable = False)
+    image_link = db.Column(db.String(500), nullable = False)
+    facebook_link = db.Column(db.String(120), nullable = True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    website_link = db.Column(db.String(120), nullable = True)
+    seeking_venues = db.Column(db.Boolean(), nullable = False, default= False)
+    seeking_description = db.Column(db.String(120), nullable = True)
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
