@@ -27,6 +27,7 @@ db = SQLAlchemy(app)
 
 # TODO: connect to a local postgresql database [Done]
 app.config['SQLALCHEMY_DATABASE_URI']=  SQLALCHEMY_DATABASE_URI
+
 migrate = Migrate(app, db)
 
 #----------------------------------------------------------------------------#
@@ -52,6 +53,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(1200), nullable = True )
     shows = db.relationship('Show', backref = 'venue', lazy = True)
     genres = db.relationship('VenueGenre', backref = 'venue', lazy= True)
+  
 class Artist(db.Model):
     __tablename__ = 'artist'
 
@@ -70,9 +72,9 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String(120), nullable = True)
     shows = db.relationship('Show', backref = 'artist', lazy= True)
     genres = db.relationship('ArtistGenre', backref = 'artist', lazy= True)
-
+ 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. [done]
-   
+
 class Show(db.Model):
     __tablename__ = 'show'
 
@@ -83,20 +85,16 @@ class Show(db.Model):
 
 class ArtistGenre(db.Model):
     __tablename__ = 'artist_genre'
-    id = db.Column(db.Integer, primary_key = True, nullable = False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable = False)
-    name = db.Column(db.String(120), nullable = False)
-
-    db.UniqueConstraint('name','artist_id')
+    
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'),primary_key = True, nullable = False)
+    name = db.Column(db.String(120), primary_key = True, nullable = False,)
   
 class VenueGenre(db.Model):
     __tablename__ = 'venue_genre'
-    id = db.Column(db.Integer, primary_key = True, nullable = False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False)
-    name = db.Column(db.String(120), nullable = False)
+    
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False , primary_key = True)
+    name = db.Column(db.String(120), nullable = False,primary_key = True)
 
-    db.UniqueConstraint('name','venue_id')
-  
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
