@@ -1,58 +1,90 @@
 {% extends 'layouts/main.html' %}
 {% block title %}New Venue{% endblock %}
 {% block content %}
-  <div class="form-wrapper">
-    <form method="post" class="form">
-      <h3 class="form-heading">List a new venue <a href="{{ url_for('index') }}" title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
-      <div class="form-group">
-        <label for="name">Name</label>
-        {{ form.name(class_ = 'form-control', autofocus = true) }}
-      </div>
-      <div class="form-group">
-          <label>City & State</label>
-          <div class="form-inline">
-            <div class="form-group">
-              {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true) }}
-            </div>
-            <div class="form-group">
-              {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true) }}
-            </div>
-          </div>
-      </div>
-      <div class="form-group">
-        <label for="address">Address</label>
-        {{ form.address(class_ = 'form-control', autofocus = true) }}
-      </div>
-      <div class="form-group">
-          <label for="phone">Phone</label>
-          {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', autofocus = true) }}
-        </div>
-      <div class="form-group">
-        <label for="genres">Genres</label>
-        <small>Ctrl+Click to select multiple</small>
-        {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
-      </div>
-      <div class="form-group">
-          <label for="facebook_link">Facebook Link</label>
-          {{ form.facebook_link(class_ = 'form-control', placeholder='http://wwww.facebook.com/your.name', autofocus = true) }}
-        </div>
-      <div class="form-group">
-          <label for="website_link">Website Link</label>
-          {{ form.website_link(class_ = 'form-control', placeholder='http://http://wwww.website.com', autofocus = true) }}
-        </div>
-      <div class="form-group">
-          <label for="image_link">Image Link</label>
-          {{ form.image_link(class_ = 'form-control', placeholder='http://www.example.com', autofocus = true) }}
+<div class="form-wrapper">
+  <form method="post" class="form">
+
+    <h3 class="form-heading">List a new venue <a href="{{ url_for('index') }}" title="Back to homepage"><i
+          class="fa fa-home pull-right"></i></a></h3>
+    <div class="form-group">
+      {% for error in form.name.errors %}
+      <ul>
+        <li style="color:red">{{ error }}</li>
+      </ul>
+      {% endfor %}
+      <label for="name">Name</label>
+      {{ form.name(class_ = 'form-control', autofocus = true) }}
+    </div>
+    <div class="form-group">
+      <label>City & State</label>
+      <div class="form-inline">
+        <div class="form-group">
+          {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true) }}
         </div>
         <div class="form-group">
-          <label for="name">I'm Currently Seeking Talent</label>
-          {{ form.seeking_talent(class_ = 'form-control', autofocus = true) }}
+          {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true) }}
         </div>
-        <div class="form-group">
-          <label for="name">Describe The Talent You're Looking For</label>
-          {{ form.seeking_description(class_ = 'form-control', autofocus = true) }}
-        </div>
-      <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
-    </form>
-  </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="address">Address</label>
+      {{ form.address(class_ = 'form-control', autofocus = true) }}
+    </div>
+    <div class="form-group">
+      <label for="phone">Phone</label>
+      {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', autofocus = true) }}
+      <ul>
+        {% for error in form.phone.errors %}
+        <li style="color:red">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="genres">Genres</label>
+      <small>Ctrl+Click to select multiple</small>
+      {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
+      <ul>
+        {% for error in form.genres.errors %}
+        <li style="color:red">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="facebook_link">Facebook Link</label>
+      {{ form.facebook_link(class_ = 'form-control', placeholder='http://wwww.facebook.com/your.name', autofocus = true) }}
+      <ul>
+        {% for error in form.facebook_link.errors %}
+        <li style="color:red">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="website_link">Website Link</label>
+      {{ form.website_link(class_ = 'form-control', placeholder='http://http://wwww.website.com', autofocus = true) }}
+      <ul>
+        {% for error in form.website_link.errors %}
+        <li style="color:red">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="image_link">Image Link</label>
+      {{ form.image_link(class_ = 'form-control', placeholder='http://www.example.com', autofocus = true) }}
+      <ul>
+        {% for error in form.image_link.errors %}
+        <li style="color:red">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="form-group">
+      <label for="name">I'm Currently Seeking Talent</label>
+      {{ form.seeking_talent(class_ = 'form-control', autofocus = true) }}
+    </div>
+    <div class="form-group">
+      <label for="name">Describe The Talent You're Looking For</label>
+      {{ form.seeking_description(class_ = 'form-control', autofocus = true) }}
+    </div>
+    <input type="submit" value="Create Venue" class="btn btn-primary btn-lg btn-block">
+  </form>
+</div>
 {% endblock %}
