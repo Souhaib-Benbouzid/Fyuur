@@ -34,57 +34,39 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
-# association table of many to many Relationship between Artist & Genres 
-artist_genre = db.Table(
-  'artist_genre',
-  db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True),
-  db.Column('artist_id', db.Integer, db.ForeignKey('artist.id'), primary_key=True),
-)
 
-# association table of many to many Relationship between Venus & Genres 
-venue_genre = db.Table(
-  'venue_genre',
-  db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True),
-  db.Column('venue_id', db.Integer, db.ForeignKey('venue.id'), primary_key=True),
-)
 
-class Genre(db.Model):
-    __tablename__ = 'genre'
-    __table_args__ = (db.UniqueConstraint('name'),)
+class VenueGenre(db.Model):
+    __tablename__ = 'venue_genre'
+    __table_args__ = (db.UniqueConstraint('name','venue'),)
 
     id = db.Column(db.Integer, primary_key = True, )
     name = db.Column(db.String(50),nullable = False)
-    # many to many  relationship with Artist and Venue (Genre is the parents table)
-    artists = db.relationship('Artist', secondary = artist_genre, backref = db.backref('genre', lazy=True))
-    venues = db.relationship('Venue', secondary = venue_genre, backref = db.backref('genre', lazy=True))
-
-    def __repr__(self):
-      return '<id: {}, name: {}, artists: {}, venues: {}>'.format( self.id, self.name, self.artists, self.venues,)
-  
-
-class State(db.Model):
-    __tablename__= 'state'
-    __table_args__ = (db.UniqueConstraint('state'),)
-
-    id = db.Column(db.Integer, primary_key = True)
-    state = db.Column(db.String(200) , nullable= False )
+    venue = db.Column(db.Integer, db.ForeignKey('venue.id'))
     
-    # one to many  relationship with Artist and Venue (States is the parents table)
-    venues = db.relationship('Venue', backref = 'state', lazy= True)
-    artists = db.relationship('Artist', backref = 'state', lazy= True)
+    def __repr__(self):
+      return '<id: {}, name: {},venue: {},>'.format( self.id, self.name, self.venue)
+  
+class ArtistGenre(db.Model):
+    __tablename__ = 'artist_genre'
+    __table_args__ = (db.UniqueConstraint('name','artist'),)
+
+    id = db.Column(db.Integer, primary_key = True, )
+    name = db.Column(db.String(50),nullable = False)
+    artist = db.Column(db.Integer, db.ForeignKey('artist.id'))
+   
 
     def __repr__(self):
-      return '<id: {}, state: {}, venues: {}, artists: {}>'.format( self.id, self.state, self.venues, self.artists,)
+      return '<id: {}, name: {},artist: {},>'.format( self.id, self.name, self.artist)
   
-
 class Venue(db.Model):
     __tablename__ = 'venue'
-    __table_args__ = (db.UniqueConstraint('name','city','state_id','address'),)
+    __table_args__ = (db.UniqueConstraint('name','city','state','address'),)
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable = False)
     city = db.Column(db.String(120), nullable = False)
-    state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable = False)
+    state = db.Column(db.String(120), nullable = False)
     address = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
     image_link = db.Column(db.String(500), nullable = False)
@@ -95,22 +77,23 @@ class Venue(db.Model):
     website_link = db.Column(db.String(120), nullable = False)  
     seeking_talent = db.Column(db.Boolean, nullable = False , default = False)
     seeking_description = db.Column(db.String(1200), nullable = True )
-    shows = db.relationship('Show', backref = 'venue', lazy = True)
-   
+
+    shows = db.relationship('Show', backref = 'venue')
+    genres = db.relationship('VenueGenre', backref='venues')
+  
+
     def __repr__(self):
-      return '<id: {}, name: {}, city: {}, state: {}, address: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_talent: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state, self.address, self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_talent, self.seeking_description)
+      return '<id: {}, name: {}, city: {}, state: {}, address: {},genres: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_talent: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state, self.address, self.genres, self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_talent, self.seeking_description)
 
 
 class Artist(db.Model):
     __tablename__ = 'artist'
-    __table_args__ = (db.UniqueConstraint('name','city','state_id','phone'),)
+    __table_args__ = (db.UniqueConstraint('name','city','state','phone'),)
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable = False)
     city = db.Column(db.String(120), nullable = False)
-    # many to one
-    state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable = False)
-    
+    state = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
     image_link = db.Column(db.String(500), nullable = False)
     facebook_link = db.Column(db.String(120), nullable = True)
@@ -121,12 +104,16 @@ class Artist(db.Model):
     seeking_venues = db.Column(db.Boolean(), nullable = False, default= False)
     seeking_description = db.Column(db.String(120), nullable = True)
     
+    # from app import db, Artist,Venue,VenueGenre,Show,ArtistGenre
+    # Artist.query.all()
     # on to many relationship with show (artist is parent table) 
-    shows = db.relationship('Show', backref = 'artist', lazy= True)
+    shows = db.relationship('Show', backref = 'artist')
+    genres = db.relationship('ArtistGenre', backref = 'artists')
 
     #display model attribute
     def __repr__(self):
-      return '<id: {}, name: {}, city: {}, state: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_venues: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state, self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_venues, self.seeking_description)
+      return '<id: {}, name: {}, city: {}, state: {}, genres: {}, phone: {}, image: {}, facebook: {}, website: {}, seeking_venues: {}, seeking_description: {}>'.format( self.id, self.name, self.city, self.state,
+      self.genres,self.phone, self.image_link, self.facebook_link, self.website_link, self.seeking_venues, self.seeking_description)
      
        
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration. [done]
@@ -137,8 +124,8 @@ class Show(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     date = db.Column(db.DateTime(timezone=True), default = datetime.datetime.utcnow, nullable=False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable = False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable = False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'))
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'))
 
     def __repr__(self):
       return '<id: {}, date: {}, artist_id: {}, venue_id: {}>'.format( self.id, self.date, self.artist_id, self.venue_id,)
@@ -149,9 +136,9 @@ __table_args__ = (db.UniqueConstraint('name', 'address'), )
 from app import Artist,Venue, Show,State,Genre,artist_genre,venue_genre
 from app import db
 state = State(state='KA')
-venue = Venue(name='jawhara', city='oran' ,state_id=1, address='21 kaisa', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_talent=True,seeking_description='atcho chwia')
+venue = Venue(name='jawhara', city='oran' ,state=1, address='21 kaisa', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_talent=True,seeking_description='atcho chwia')
 
-artist = Artist(name='sohaib', city='bousaada' ,state_id=1, phone='651-214-5244',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_venues=True,seeking_description='hatolna n5dmo awedi')
+artist = Artist(name='sohaib', city='bousaada' ,state=1, phone='651-214-5244',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_venues=True,seeking_description='hatolna n5dmo awedi')
 
 objects = [state,artist,venue]
 
@@ -316,23 +303,48 @@ def show_venue(venue_id):
 #  Create Venue
 #  ----------------------------------------------------------------
 
-@app.route('/venues/create', methods=['GET','POST'])
+@app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
-  if form.validate_on_submit():
-      return "hi"
-  else:
-    flash(form.genres.data)
   return render_template('forms/new_venue.html', form=form)
-'''
-@app.route('/venues/create', methods=[])
+
+@app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
-  
-  if request.data.validate_on_submit():
-    return render_template('hello world')
-'''
+  try:
+    # add a venue
+    venue = Venue(
+      name= request.args.get('name'),
+      city= request.args.get('city'),
+      state= request.args.get('state'),
+      address= request.args.get('address'),
+      phone= request.args.get('phone'),
+      facebook_link=request.args.get('facebook_link'),
+      website_link=request.args.get('website_link'),
+      image_link=request.args.get('image_link'),
+      seeking_talent= request.args.get('seeking_talent'),
+      seeking_description= request.args.get('seeking_description'),
+      )
+    db.session.add(venue)
+    db.session.commit()
+    #add genres
+    for element in request.args.get('genres'):
+        genre = VenueGenre(name=element)
+        genre.venue = venue.id
+        db.session.add(genre)
+        db.session.commit()
+    # on successful db insert, flash success
+    # TODO: modify data to be the data object returned from db insertion
+    flash('Venue ' + venue.name + ' was successfully listed!')
 
+  except:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    db.session.rollback()
+    flash('An error occurred. Venue ' + request.args.get('name') + ' could not be listed.')
+     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  finally:
+    db.session.close()
+    return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -513,21 +525,45 @@ def edit_venue_submission(venue_id):
 @app.route('/artists/create', methods=['GET'])
 def create_artist_form():
   form = ArtistForm()
-  form.state.choices = [(g.id, g.name) for g in State.query.order_by('id')]
-  form.genres.choices = [(g.id, g.name) for g in Genre.query.order_by('id')]
   return render_template('forms/new_artist.html', form=form)
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-  # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+  # TODO: insert form data as a new Artist record in the db, instead
+  try:
+    # add a venue
+    artist = Artist(
+      name= request.args.get('name'),
+      city= request.args.get('city'),
+      state= request.args.get('state'),
+      address= request.args.get('address'),
+      phone= request.args.get('phone'),
+      facebook_link=request.args.get('facebook_link'),
+      website_link=request.args.get('website_link'),
+      image_link=request.args.get('image_link'),
+      seeking_talent= request.args.get('seeking_talent'),
+      seeking_description= request.args.get('seeking_description'),
+      )
+    db.session.add(artist)
+    db.session.commit()
+    #add genres
+    for element in request.args.get('genres'):
+        genre = ArtistGenre(name=element)
+        genre.artist = artist.id
+        db.session.add(genre)
+        db.session.commit()
+    # on successful db insert, flash success
+    # TODO: modify data to be the data object returned from db insertion
+    flash('Artist ' + artist.name + ' was successfully listed!')
+    
+  except:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    db.session.rollback()
+    flash('An error occurred. Venue ' + request.args.get('name') + ' could not be listed.')
+     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  finally:
+    db.session.close()
+    return render_template('pages/home.html')
 
 
 #  Shows
@@ -612,6 +648,14 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
     app.logger.info('errors')
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    return render_template('errors/500.html'), 500
 
 #----------------------------------------------------------------------------#
 # Launch.

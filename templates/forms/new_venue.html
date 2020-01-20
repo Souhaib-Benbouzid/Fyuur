@@ -2,7 +2,7 @@
 {% block title %}New Venue{% endblock %}
 {% block content %}
 <div class="form-wrapper">
-  <form method="post" class="form">
+  <form action="/venues/create" method="post" class="form">
 
     <h3 class="form-heading">List a new venue <a href="{{ url_for('index') }}" title="Back to homepage"><i
           class="fa fa-home pull-right"></i></a></h3>
@@ -60,7 +60,7 @@
     </div>
     <div class="form-group">
       <label for="website_link">Website Link</label>
-      {{ form.website_link(class_ = 'form-control', placeholder='http://http://wwww.website.com', autofocus = true) }}
+      {{ form.website_link(class_ = 'form-control', placeholder='http://wwww.website.com', autofocus = true) }}
       <ul>
         {% for error in form.website_link.errors %}
         <li style="color:red">{{ error }}</li>
