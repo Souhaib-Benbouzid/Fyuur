@@ -231,7 +231,7 @@ class VenueForm(Form):
 class ShowForm(FlaskForm):
     artist_id = StringField('artist_id')
     venue_id = StringField('venue_id')
-    start_time = DateTimeField('start_time',validators=[InputRequired()],default= datetime.today())
+    start_time = DateTimeField('start_time')
 
 # NEW ARTIST
 class ArtistForm(FlaskForm):

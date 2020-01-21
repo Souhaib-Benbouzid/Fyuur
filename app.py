@@ -16,6 +16,7 @@ from config import SQLALCHEMY_DATABASE_URI
 from flask_migrate import Migrate
 import pytz
 import datetime
+import sys
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -612,23 +613,67 @@ def shows():
   }]
   return render_template('pages/shows.html', shows=data)
 
-@app.route('/shows/create')
+@app.route('/shows/create', methods=['POST','GET'])
 def create_shows():
   # renders form. do not touch.
   form = ShowForm()
+  flash(form.validate_on_submit())
+  
+  if form.validate_on_submit():
+      a  = form.artist_id.data
+      v  = form.venue_id.data
+      t = form.start_time.data.strftime("%Y-%m-%d %H:%M:%S")
+      information = [a,v,t]
+      # print(start_time, file=sys.stdout)
+      flash(information)
+      return redirect(url_for('create_show_submission',show=information))
+
+  else:
+    flash(form.errors)
   return render_template('forms/new_show.html', form=form)
 
-@app.route('/shows/create', methods=['POST'])
-def create_show_submission():
+'''
+venue1 = Venue(name='jawhara', city='5245' ,state='sd', address='21 kaisa', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_talent=True,seeking_description='atcho chwia')
+venue2 = Venue(name='mariadoo', city='242' ,state='sd', address='21 kaisa', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_talent=True,seeking_description='atcho chwia')
+venue3 = Venue(name='botas', city='ora2544n' ,state='sd', address='21 kaisa', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_talent=True,seeking_description='atcho chwia')
+artist1 = Artist(name='zaki', city='25' ,state='sd', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_venues=True,seeking_description='atcho chwia')
+artist2 = Artist(name='amani', city='ora42525n' ,state='sd', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_venues=True,seeking_description='atcho chwia')
+artist3 = Artist(name='omi', city='45254' ,state='sd', phone='216-546-1234',image_link='https://www.youtube.com/image',facebook_link='https://www.facebook.com/me',website_link='https://www.me.com/',seeking_venues=True,seeking_description='atcho chwia')
+db.session.add(venue1,venue2,venue3,artist1,artist2,artist3)
+db.session.commit()
+
+artist =[7,8,9]
+artist =[3,4,5]
+'''
+
+@app.route('/shows/create/<show>')
+def create_show_submission(show):
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
+  #flash('resived')  
+  #flash( str(type(show)))
+  #flash( show[2])
+  #flash( show[7])
+  #flash( show[12:31])
+  
+  artist_id = show[2]
+  venue_id = show[7]
+  date_time = show[12:31]
+  try:
+    add_show = Show(artist_id=artist_id,venue_id=venue_id,date=date_time)
+    db.session.add(add_show)
+    db.session.commit()
+    # on successful db insert, flash success
+    flash('Show was successfully listed!')
+  except:  
+    # TODO: on unsuccessful db insert, flash an error instead.
+    db.session.rollback()
+    flash("An error occurred. Show could not be listed.")
+  finally:
+    db.session.close()
+    return render_template('pages/home.html')
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
 
 @app.errorhandler(404)
 def not_found_error(error):
