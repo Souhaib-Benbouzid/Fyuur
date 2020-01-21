@@ -221,8 +221,8 @@ class VenueForm(Form):
     )
     facebook_link = StringField('facebook_link', validators=[InputRequired('Please Enter Your Facebook link!'),URL(),validate_facebook])
     website_link = StringField('website_link', validators=[InputRequired('Please Enter Your Website link!'),URL()])
-    seeking_talent = BooleanField('seeking_talent',[InputRequired('test')])
-    seeking_description = StringField('seeking_description', validators=[InputRequired('Describe The Talent You are looking For')])
+    seeking_talent = BooleanField('seeking_talent',)
+    seeking_description = StringField('seeking_description',)
 
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM [done]
@@ -328,6 +328,12 @@ class ArtistForm(FlaskForm):
         # TODO implement enum restriction
         'facebook_link', validators=[URL(), validate_facebook]
     )
+    website_link = StringField(
+        # TODO implement enum restriction
+        'website_link', validators=[URL()]
+    )
+    seeking_venues = BooleanField('seeking_talent',)
+    seeking_description = StringField('seeking_description',)
     
 
 """ 
