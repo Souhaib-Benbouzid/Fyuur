@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5a39f5ad5a9a
+Revision ID: 95630cea4db9
 Revises: 
-Create Date: 2020-01-17 12:37:30.976398
+Create Date: 2020-01-20 22:30:02.245405
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5a39f5ad5a9a'
+revision = '95630cea4db9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,7 +29,8 @@ def upgrade():
     sa.Column('website_link', sa.String(length=120), nullable=True),
     sa.Column('seeking_venues', sa.Boolean(), nullable=False),
     sa.Column('seeking_description', sa.String(length=120), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', 'city', 'state', 'phone')
     )
     op.create_table('venue',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -43,28 +44,34 @@ def upgrade():
     sa.Column('website_link', sa.String(length=120), nullable=False),
     sa.Column('seeking_talent', sa.Boolean(), nullable=False),
     sa.Column('seeking_description', sa.String(length=1200), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', 'city', 'state', 'address')
     )
     op.create_table('artist_genre',
-    sa.Column('artist_id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=120), nullable=False),
-    sa.ForeignKeyConstraint(['artist_id'], ['artist.id'], ),
-    sa.PrimaryKeyConstraint('artist_id', 'name')
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
+    sa.Column('artist', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['artist'], ['artist.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', 'artist')
     )
     op.create_table('show',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('date', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('artist_id', sa.Integer(), nullable=False),
-    sa.Column('venue_id', sa.Integer(), nullable=False),
+    sa.Column('artist_id', sa.Integer(), nullable=True),
+    sa.Column('venue_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['artist_id'], ['artist.id'], ),
     sa.ForeignKeyConstraint(['venue_id'], ['venue.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('artist_id', 'date')
     )
     op.create_table('venue_genre',
-    sa.Column('venue_id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=120), nullable=False),
-    sa.ForeignKeyConstraint(['venue_id'], ['venue.id'], ),
-    sa.PrimaryKeyConstraint('venue_id', 'name')
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
+    sa.Column('venue', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['venue'], ['venue.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', 'venue')
     )
     # ### end Alembic commands ###
 
