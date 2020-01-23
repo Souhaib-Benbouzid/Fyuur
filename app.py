@@ -184,7 +184,16 @@ def venues():
 
       # add the area to the data
       data.append(area)
-      
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    if data:
+      return render_template('pages/venues.html', areas=data)
+    else:
+      return render_template('errors/404.html')     
+
+
     ''' data=[{
       "city": "San Francisco",
       "state": "CA",
@@ -207,14 +216,7 @@ def venues():
       }]
     }]
     '''
-  except:
-    db.session.rollback()
-  finally:
-    db.session.close()
-    if data:
-      return render_template('pages/venues.html', areas=data)
-    else:
-      return render_template('errors/404.html')
+  
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -478,18 +480,23 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data = []
-  arists = db.session.query(Artist.id,Artist.name).all()
-  for artist in arists:
-    new_artist = {
-      "id": artist[0],
-      "name": artist[1]
-    }
-    data.append(new_artist)
-  if data:
-    return render_template('pages/artists.html', artists=data)
-  else: 
-    return render_template('errors/404.html')
+  try:
+    data = []
+    arists = db.session.query(Artist.id,Artist.name).all()
+    for artist in arists:
+      new_artist = {
+        "id": artist[0],
+        "name": artist[1]
+      }
+      data.append(new_artist)
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    if data:
+      return render_template('pages/artists.html', artists=data)
+    else: 
+      return render_template('errors/404.html')
 
   '''data=[{
     "id": 4,
@@ -965,22 +972,30 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data. [done]
   # num_shows should be aggregated based on number of upcoming shows per venue.
-  data = []
-  shows = Show.query.all()
-  for show in shows:
-    new_show = {
-    "venue_id": show.venue_id,
-    "venue_name": show.venue.name,
-    "artist_id": show.artist_id,
-    "artist_name": show.artist.name,
-    "artist_image_link": show.artist.image_link,
-    "start_time": show.date.strftime("%Y-%m-%d %H:%M:%S")
-    }
-    data.append(new_show)
-  if data:
-    return render_template('pages/shows.html', shows=data)
-  else:
-    return render_template('errors/404.html')
+  try:
+    data = []
+    shows = Show.query.all()
+    for show in shows:
+      new_show = {
+      "venue_id": show.venue_id,
+      "venue_name": show.venue.name,
+      "artist_id": show.artist_id,
+      "artist_name": show.artist.name,
+      "artist_image_link": show.artist.image_link,
+      "start_time": show.date.strftime("%Y-%m-%d %H:%M:%S")
+      }
+      data.append(new_show)
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+    if data:
+      return render_template('pages/shows.html', shows=data)
+    else:
+      return render_template('errors/404.html')     
+  
+  
+ 
 
 
 '''data=[
